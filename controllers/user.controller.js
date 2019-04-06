@@ -1,11 +1,14 @@
 const User = require('../models/user.model');
 const moongose = require('mongoose');
+const bcrypt = require('bcrypt');
+
 exports.user_create = function(req, res, next){
+	const hash = bcrypt.hashSync(req.body.email.toString() + req.body.password.toString(), 10);
 	let user = new User({
 		name: req.body.name,
 		surname: req.body.surname,
 		email: req.body.email,
-		password: req.body.password,
+		password: hash,
 		role: req.body.role
 	});
 	user.save(function(err){
@@ -13,7 +16,7 @@ exports.user_create = function(req, res, next){
 			res.status(404).send('Error desconocido:' + err);
 			return next(err);
 		}
-		res.status(500).send('User Created Successfully.');
+		res.status(200).send('User Created Successfully.');
 	})
 }
 exports.user_details = function(req, res, next){
@@ -47,29 +50,39 @@ exports.check = function(req, res, next){
 	res.send("Todo OK :D");
 }
 exports.user_check = function(req, res, next){
-	const reqEmail = req.body;
-	User.findOne({email:req.body.email}, function(err, user){
-		if(err){
-			res.status(404).send('No sabemos que ha ocurrido ');
-			return next(err);
-		}
-		if(user != null && user.email == req.body.email.toString()){
-			res.status(301).send('El Usuario Ya Existe');
-		}else{
-			res.status(500).send('Usuario Disponible');
-		}
-		console.log('request: ' + req.body.email.toString());
-	});
+	console.log(req.body);
+	if(req.params.email != ''){
+		const reqEmail = req.body;
+		User.findOne({email:req.body.email}, function(err, user){
+			if(err){
+				res.status(404).send('No sabemos que ha ocurrido ');
+				return next(err);
+			}
+			if(user != null && user.email == req.body.email.toString()){
+				res.status(401).send({'valid':false});
+			}else{
+				res.status(200).send({'valid':true});
+			}
+			console.log('request: ' + req.body.email.toString());
+		});
+	}else{
+		res.status(404).send('No se puede dejar el campo email vacio');
+	}
 }
 exports.user_login = function(req, res, next){
 	let validated = false;
-	const login = req.body;
+		let login = null;
+		let hash = '';
+	if(req.body.email != null && req.body.password != null){
+	login = req.body;
 	User.findOne({email:login.email}, function(err, user){
 		if(err) return next(err);
-		validated = login.password != null && user['password'] == login.password.toString();
-		console.log('User ' + login.email + ' pwd ' + login.password);
-		res.send({'loged':validated});
+		validated = bcrypt.compareSync(login.email.toString() + login.password.toString(), user['password']);
+		res.status(200).send({'loged':validated});
 		});
+	}else{
+	res.status(404).send('No pueden llegar los campos vacios');
+	}
 	
 }
 

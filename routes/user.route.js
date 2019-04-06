@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const user_controller = require('../controllers/user.controller');
-
+const cors = require('cors');
 
 //Activando las CORS, o eso creo.
 router.use(function(req, res, next) {
