@@ -20,16 +20,28 @@ exports.user_create = function(req, res, next){
 	})
 }
 exports.user_details = function(req, res, next){
-	User.findById(req.params.id, function ( err, user){
-		if(err) return next(err);
+	User.findOne({'email':req.params.email}, function ( err, user){
+		if(err){ 
+		res.status(404).send('No sabemos que a ocurrido');
+		return next(err);}
+		console.log('email: ' + req.params.email);
 		res.send(user);
 	});
 };
 exports.user_update = function(req, res, next){
-	User.findOneAndUpdate(req.params.id, {$set: req.body},
+	console.log(req.body);
+	let hash;
+	let realPassword = req.body.password;
+	if(req.body.newPassword != null) realPassword = req.body.newPassword;
+	hash = bcrypt.hashSync(req.body.email.toString() + realPassword, 10);
+	User.findOneAndUpdate({email:req.body.backupEmail}, {$set:{name:req.body.name, surname:req.body.surname, email:req.body.email,password:hash, role:req.body.role}},
 	function(err, user){
-		if(err) return next(err);
-		res.send('User Updated');
+		console.log(user);
+		if(err){ 
+			res.status(404).send('sa liao');
+			return next(err);
+		}
+		res.status(200).send('User Updated');
 	});
 };
 
@@ -50,7 +62,6 @@ exports.check = function(req, res, next){
 	res.send("Todo OK :D");
 }
 exports.user_check = function(req, res, next){
-	console.log(req.body);
 	if(req.params.email != ''){
 		const reqEmail = req.body;
 		User.findOne({email:req.body.email}, function(err, user){

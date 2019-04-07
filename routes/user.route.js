@@ -7,6 +7,7 @@ const cors = require('cors');
 router.use(function(req, res, next) {
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+  res.header('Access-Control-Allow-Methods','POST,GET, HEADER,PUT, DELETE')
   next();
 });
 //Check Route:
@@ -14,8 +15,8 @@ router.get('/check', user_controller.check);
 
 /*BASIC CRUD*/
 router.post('/create', user_controller.user_create);
-router.get('/user/:id', user_controller.user_details);
-router.put('/:id/update', user_controller.user_update);
+router.get('/user/:email', user_controller.user_details);
+router.put('/:email/update', user_controller.user_update);
 router.delete('/:id/delete', user_controller.user_delete);
 /*User List*/
 router.get('/list', user_controller.user_list);
@@ -24,6 +25,7 @@ router.get('/list', user_controller.user_list);
 router.post('/login', user_controller.user_login);
 /*SignUp*/
 router.post('/checkUser', user_controller.user_check);
+
 
 module.exports = router;
 
